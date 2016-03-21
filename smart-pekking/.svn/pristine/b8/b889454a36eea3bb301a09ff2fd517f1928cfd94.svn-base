@@ -1,0 +1,161 @@
+package com.itheima.zhbj74.base.impl;
+
+import java.util.ArrayList;
+
+import android.app.Activity;
+import android.graphics.Color;
+import android.text.TextUtils;
+import android.view.Gravity;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.gson.Gson;
+import com.itheima.zhbj74.activities.MainActivity;
+import com.itheima.zhbj74.base.BaseMenuDetailPager;
+import com.itheima.zhbj74.base.BasePager;
+import com.itheima.zhbj74.base.impl.menu.InteractMenuDetailPager;
+import com.itheima.zhbj74.base.impl.menu.NewsMenuDetailPager;
+import com.itheima.zhbj74.base.impl.menu.PhotosMenuDetailPager;
+import com.itheima.zhbj74.base.impl.menu.TopicMenuDetailPager;
+import com.itheima.zhbj74.domain.NewsMenu;
+import com.itheima.zhbj74.fragment.LeftMenuFragment;
+import com.itheima.zhbj74.global.GlobalConstants;
+import com.itheima.zhbj74.utils.CacheUtils;
+import com.lidroid.xutils.HttpUtils;
+import com.lidroid.xutils.exception.HttpException;
+import com.lidroid.xutils.http.ResponseInfo;
+import com.lidroid.xutils.http.callback.RequestCallBack;
+import com.lidroid.xutils.http.client.HttpRequest.HttpMethod;
+
+/**
+ * @author 官珺伟
+ *
+ * 2016-3-19 下午9:07:49
+ */
+public class NewsCenterPager extends BasePager {
+	
+	public NewsCenterPager(Activity activity) {
+		super(activity);
+		
+	}
+	
+	@Override
+	public void initData() {
+		
+		System.out.println("新闻中心初始化了");
+		
+//		TextView view = new TextView(mActivity);
+//		view.setText("新闻中心");
+//		view.setTextColor(Color.RED);
+//		view.setTextSize(22);
+//		view.setGravity(Gravity.CENTER);
+//		
+//		mFl_content.addView(view);
+		
+		mTv_title.setText("智慧北京");
+		
+		mBtn_menu.setVisibility(View.VISIBLE);
+		
+		String cache = CacheUtils.getCache(GlobalConstants.CATEGORY_URL,
+				mActivity);
+		if (!TextUtils.isEmpty(cache)) {
+			System.out.println("发现缓存：");
+			
+			processData(cache);
+			
+		} else {
+			
+			getDataFromServer();
+		}
+		
+		getDataFromServer();
+	}
+	
+	/**
+	 * 
+	 */
+	private void getDataFromServer() {
+		
+		HttpUtils utils = new HttpUtils();
+		
+		utils.send(HttpMethod.GET, GlobalConstants.CATEGORY_URL,
+				new RequestCallBack<String>() {
+					
+					@Override
+					public void onSuccess(ResponseInfo<String> responseInfo) {
+						
+						String result = responseInfo.result;
+						
+						// System.out.println(result);
+						
+						processData(result);
+						
+						CacheUtils.setCache(GlobalConstants.CATEGORY_URL,
+								result, mActivity);
+					}
+					
+					@Override
+					public void onFailure(HttpException error, String msg) {
+						
+						error.printStackTrace();
+						Toast.makeText(mActivity, msg, 0).show();
+					}
+					
+				});
+		
+	}
+	
+	private ArrayList<BaseMenuDetailPager> mMenuDetailPagers;
+	private NewsMenu mNewsMenuData;
+	
+	protected void processData(String json) {
+		
+		Gson gson = new Gson();
+		
+		mNewsMenuData = gson.fromJson(json, NewsMenu.class);
+		
+		// System.out.println("解析结果："+data);
+		
+		// 获取侧边栏对象
+		MainActivity mainActivity = (MainActivity) mActivity;
+		
+		LeftMenuFragment fragment = mainActivity.getLeftMenuFragment();
+		
+		fragment.setMenuData(mNewsMenuData.data);
+		
+		mMenuDetailPagers = new ArrayList<BaseMenuDetailPager>();
+		mMenuDetailPagers.add(new NewsMenuDetailPager(mActivity));
+		mMenuDetailPagers.add(new TopicMenuDetailPager(mActivity));
+		mMenuDetailPagers.add(new PhotosMenuDetailPager(mActivity));
+		mMenuDetailPagers.add(new InteractMenuDetailPager(mActivity));
+		
+		//将新闻菜单详情页面设置为默认页面
+		setCurrentDetailPager(0);
+	}
+	
+	/**
+	 * 设置菜单详情页面
+	 * 
+	 * @param position
+	 */
+	public void setCurrentDetailPager(int position) {
+		
+		// 重新给framelayout 添加内容
+		BaseMenuDetailPager pager = mMenuDetailPagers.get(position);
+		
+		View view = pager.mRootView;
+		
+		mFl_content.removeAllViews();
+		mFl_content.addView(view);
+		
+		//初始化数据
+		
+		pager.initData();
+		
+		
+		mTv_title.setText(mNewsMenuData.data.get(position).title);
+		
+	}
+	
+}

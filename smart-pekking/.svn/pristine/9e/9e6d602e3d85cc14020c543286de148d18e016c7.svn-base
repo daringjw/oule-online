@@ -1,0 +1,53 @@
+package com.itheima.zhbj74.activities;
+
+import com.itheima.zhbj74.R;
+import com.itheima.zhbj74.fragment.ContentFragment;
+import com.itheima.zhbj74.fragment.LeftMenuFragment;
+import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
+import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+
+public class MainActivity extends SlidingFragmentActivity{
+	private static final String TAG_CONTENT = "TAG_CONTENT";
+	private static final String TAG_LEFT_MENU = "TAG_LEFT_MENU";
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		
+		super.onCreate(savedInstanceState);
+		
+		setContentView(R.layout.activity_main);
+		
+		
+		setBehindContentView(R.layout.left_menu);
+		
+		SlidingMenu slidingMenu = getSlidingMenu();
+		slidingMenu.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
+		slidingMenu.setBehindOffset(200);
+		
+		initFragment();
+		
+	}
+
+	private void initFragment() {
+		
+		FragmentManager fm = getSupportFragmentManager();
+		FragmentTransaction transaction = fm.beginTransaction();
+		
+		transaction.replace(R.id.fl_left_menu, new LeftMenuFragment(),TAG_LEFT_MENU);
+		
+		transaction.replace(R.id.fl_main, new ContentFragment(),TAG_CONTENT);
+		
+		
+		transaction.commit();
+		
+		
+		
+		
+		
+	}
+}

@@ -1,0 +1,35 @@
+package com.itheima.zhbj74.base.impl.menu;
+
+import android.app.Activity;
+import android.graphics.Color;
+import android.view.Gravity;
+import android.view.View;
+import android.widget.TextView;
+
+import com.itheima.zhbj74.base.BaseMenuDetailPager;
+
+/**
+ * @author 官珺伟
+ * 菜单详情页面---新闻
+ * 2016-3-19 下午8:33:03
+ */
+public class InteractMenuDetailPager extends BaseMenuDetailPager {
+	
+	public InteractMenuDetailPager(Activity activity) {
+		super(activity);
+		
+	}
+
+	@Override
+	public View initView() {
+		TextView view=new TextView(mActivity);		
+		view.setText("菜单详情页面---互动");
+		view.setTextColor(Color.RED);
+		view.setTextSize(22);
+		view.setGravity(Gravity.CENTER);
+		
+		
+		return view;
+	}
+	
+}
